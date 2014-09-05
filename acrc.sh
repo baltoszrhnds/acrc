@@ -35,13 +35,30 @@ VerifyCRC ()
   fi
 }
 
-if [  -n "$1" ];then
-  CRCCHECK=$(CheckFilename "$FILENAME")
-  if [ -n "$CRCCHECK" ];then
-    VerifyCRC $CRCCHECK
+CheckCRC ()
+{
+  if [  -n "$1" ];then
+    CRCCHECK=$(CheckFilename "$FILENAME")
+    if [ -n "$CRCCHECK" ];then
+      VerifyCRC $CRCCHECK
+    else
+      printf "No CRC found in filename.\n"
+    fi
   else
-    printf "No CRC found in filename.\n"
+    printf "Missing argument.\n"
   fi
-else
-  printf "Missing argument.\n"
-fi
+}
+
+ARGCOUNT=0
+for i in $@
+do
+  if [ -n "$i" ];then
+    #The FILE variable exists to make sure escape sequences are stripped from
+    #the input. The code to strip the input was found here:
+    #serverfault.com/a/71289
+    FILE=$(printf "$1" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")
+    ABS_PATH="$(readlink -f $FILE)"
+    FILENAME=$(basename "$ABS_PATH")
+    CheckCRC "$i"
+  fi
+done
