@@ -2,7 +2,10 @@
 
 #Get info on the file and it's path
 if [ -n "$1" ];then
-  ABS_PATH="$(readlink -f $1)"
+  #The FILE variable exists to make sure escape sequences are stripped from the
+  #input. The code to strip the input was found here: serverfault.com/a/71289
+  FILE=$(printf "$1" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")
+  ABS_PATH="$(readlink -f $FILE)"
   FILENAME=$(basename "$ABS_PATH")
 else
   printf "Missing argument.\n"
